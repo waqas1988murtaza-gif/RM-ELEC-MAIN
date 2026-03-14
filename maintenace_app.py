@@ -9,11 +9,13 @@ import os
 def save_to_google_sheet(data_dict):
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        # Make sure credentials.json is in your GitHub folder
-        creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+        
+        # Secrets se data uthane ke liye ye line lazmi hai
+        creds_info = st.secrets["gcp_service_account"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(dict(creds_info), scope)
         client = gspread.authorize(creds)
         
-        # Open the sheet
+        # Sheet ka naam confirm karein
         sheet = client.open("Maintenance_Data_Logs").sheet1
         sheet.append_row(list(data_dict.values()))
         return True
@@ -75,5 +77,5 @@ if st.button("Submit Maintenance Record"):
                 st.balloons()
             else:
                 st.error(f"Failed to connect: {res}")
-                st.warning("Data saved locally (backup.csv) as fallback.")
+                st.warning("Saving backup locally on Streamlit cloud.")
                 pd.DataFrame([entry]).to_csv("backup.csv", mode='a', index=False, header=not os.path.exists("backup.csv"))
