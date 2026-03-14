@@ -4,17 +4,14 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
-import json
 
 # --- Google Sheets Setup ---
 def save_to_google_sheet(data_dict):
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         
-        # Secrets se data JSON format mein uthayen
-        creds_json = st.secrets["gcp_service_account"]["json_creds"]
-        creds_info = json.loads(creds_json)
-        
+        # Secrets se data uthane ka sabse asan tareeqa
+        creds_info = dict(st.secrets["gcp_service_account"])
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
         client = gspread.authorize(creds)
         
