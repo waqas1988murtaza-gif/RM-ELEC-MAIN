@@ -10,11 +10,27 @@ def save_to_google_sheet(data_dict):
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         
         # Secrets se data lena
-        creds_dict = dict(st.secrets["gcp_service_account"])
+        def save_to_google_sheet(data_dict):
+    try:
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         
-        # Key ko sahi format mein lana
-        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+        # Secrets se poori dictionary uthayen
+        # Agar section name 'gcp_service_account' hai to wo uthayen, warna poora secrets
+        creds_info = st.secrets.get("gcp_service_account", st.secrets)
+        creds_dict = dict(creds_info)
         
+        # Key ke formatting ka masla hal karein
+        if "private_key" in creds_dict:
+            creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+        
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        client = gspread.authorize(creds)
+        
+        sheet = client.open("Maintenance_Data_Logs").sheet1
+        sheet.append_row(list(data_dict.values()))
+        return True
+    except Exception as e:
+        return f"Error: {e}"
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
         
