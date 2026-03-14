@@ -4,15 +4,18 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
+import json
 
 # --- Google Sheets Setup ---
 def save_to_google_sheet(data_dict):
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         
-        # Secrets se data uthane ke liye ye line lazmi hai
-        creds_info = st.secrets["gcp_service_account"]
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(dict(creds_info), scope)
+        # Secrets se data JSON format mein uthayen
+        creds_json = st.secrets["gcp_service_account"]["json_creds"]
+        creds_info = json.loads(creds_json)
+        
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
         client = gspread.authorize(creds)
         
         # Sheet ka naam confirm karein
@@ -77,5 +80,5 @@ if st.button("Submit Maintenance Record"):
                 st.balloons()
             else:
                 st.error(f"Failed to connect: {res}")
-                st.warning("Saving backup locally on Streamlit cloud.")
+                st.warning("Data saved locally (backup.csv) as fallback.")
                 pd.DataFrame([entry]).to_csv("backup.csv", mode='a', index=False, header=not os.path.exists("backup.csv"))
