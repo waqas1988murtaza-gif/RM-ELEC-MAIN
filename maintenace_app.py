@@ -1,58 +1,31 @@
 import streamlit as st
-import gspread
-from google.oauth2.service_account import Credentials
-from datetime import datetime
+import pandas as pd
 
-st.title("Maintenance Checklist")
+# Page setup
+st.set_page_config(page_title="Maintenance Checklist", layout="wide")
+st.title("🛠️ Maintenance Checklist")
 
-# Google API scope
-scope = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
+# --- YAHAN APNA COPY KIYA HUA LINK PASTE KAREIN ---
+sheet_url = "APNA_SHEET_LINK_YAHAN_PASTE_KAREIN"
 
-# Load credentials from Streamlit secrets
-try:
-    creds = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=scope
-    )
-
-    client = gspread.authorize(creds)
-
-    # Open Google Sheet
-    sheet = client.open("Maintenance").sheet1
-
-except Exception as e:
-    st.error("Google Sheet connection failed")
-    st.stop()
-
-
-st.header("Checklist: HMD (Hot Metal Detector)")
-
-clean_lens = st.checkbox("Clean lens / glass")
-power_led = st.checkbox("Verify power LED")
-alignment = st.checkbox("Check alignment")
-mounting = st.checkbox("Inspect mounting brackets")
-
-remarks = st.text_area("Observations / Remarks")
-
-if st.button("Submit Maintenance Record"):
-
+def get_csv_url(url):
     try:
-        data = [
-            str(datetime.now()),
-            "HMD",
-            clean_lens,
-            power_led,
-            alignment,
-            mounting,
-            remarks
-        ]
+        if "/edit" in url:
+            return url.split("/edit")[0] + "/export?format=csv"
+        return url
+    except:
+        return url
 
-        sheet.append_row(data)
-
-        st.success("Record submitted successfully ✅")
-
-    except Exception as e:
-        st.error("Failed to write data to Google Sheet")
+try:
+    csv_url = get_csv_url(sheet_url)
+    df = pd.read_csv(csv_url)
+    
+    st.success("✅ Google Sheet connected successfully!")
+    
+    # Data dikhanay ke liye
+    st.write("### Current Records")
+    st.dataframe(df, use_container_width=True)
+    
+except Exception as e:
+    st.error("❌ Connection Failed")
+    st.info("Check if your Google Sheet is shared as 'Anyone with the link'")
