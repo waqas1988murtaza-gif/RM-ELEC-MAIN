@@ -1,25 +1,29 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Maintenance System", page_icon="🛠️", layout="wide")
-st.title("🛠️ Maintenance Management System")
+st.set_page_config(page_title="Maintenance App", layout="wide")
+st.title("🛠️ RM Maintenance System")
 
-# Aapki Sheet ka link (Jo maine check kiya hai)
-sheet_url = "https://docs.google.com/spreadsheets/d/1MjbmnCfZYf7V1SWOxoryfIAy9pL_25IpanU0qTzRwCw/edit?usp=sharing"
-
-def get_csv_url(url):
-    return url.split("/edit")[0] + "/export?format=csv"
+# Sheet Link
+sheet_url = "https://docs.google.com/spreadsheets/d/1MjbmnCfZYf7V1SWOxoryfIAy9pL_25IpanU0qTzRwCw/export?format=csv"
 
 try:
-    csv_url = get_csv_url(sheet_url)
-    df = pd.read_csv(csv_url)
+    # Data Load karna
+    df = pd.read_csv(sheet_url)
+    st.success("✅ Connection Active")
     
-    if df.empty:
-        st.info("📢 Sheet khali hai! Please Sheet mein data enter karein.")
-    else:
-        st.success(f"✅ Data loaded! Total Records: {len(df)}")
-        st.dataframe(df, use_container_width=True, hide_index=True)
+    # Search filter
+    search = st.text_input("🔍 Search Equipment")
+    if search:
+        df = df[df.apply(lambda row: row.astype(str).str.contains(search, case=False).any(), axis=1)]
+    
+    st.dataframe(df, use_container_width=True)
 
 except Exception as e:
-    st.error("❌ Connection Error")
-    st.write("Please make sure your Google Sheet has at least one row of data and is shared as 'Anyone with the link'.")
+    st.error("⚠️ Data Nahi Mila")
+    st.info("Bhai, pehle Google Sheet mein ja kar pehli row mein 'Date, Equipment, Task, Status' likh dein.")
+
+# Data Entry Form (Sirf dekhne ke liye, link open karne ka button)
+st.sidebar.header("Add New Entry")
+st.sidebar.write("Naya data daalne ke liye niche button dabayein:")
+st.sidebar.link_button("Open Google Sheet", "https://docs.google.com/spreadsheets/d/1MjbmnCfZYf7V1SWOxoryfIAy9pL_25IpanU0qTzRwCw/edit")
