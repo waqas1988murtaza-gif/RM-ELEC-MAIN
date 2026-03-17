@@ -6,7 +6,7 @@ st.set_page_config(page_title="RM E&I Automation", page_icon="🛠️")
 st.title("🛠️ RM E&I Maintenance Automation")
 
 # Is line mein koi extra space nahi honi chahiye
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkhwqUc2fYB-9O1dV1LoB6kBA18E-ZG_xffr5upYf8FKi9xvlt0vVX0a4K30sJMGK4/exec"
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkhwqUc2fYB-9O1dV1LoB6kBAl8E-ZG_xffr5upYf8FKi9xvlt0vVXOa4K30sJMGK4mg/exec"
 
 with st.form("maintenance_form"):
     st.subheader("Inspection Details")
