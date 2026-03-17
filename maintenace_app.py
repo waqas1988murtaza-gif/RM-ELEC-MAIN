@@ -1,39 +1,28 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
-import pandas as pd
+import requests
 
 st.set_page_config(page_title="RM E&I Automation", page_icon="🛠️")
 st.title("🛠️ RM E&I Maintenance Automation")
 
-# Connection banana
-conn = st.connection("gsheets", type=GSheetsConnection)
+# --- Yahan apna Web App URL paste karein ---
+SCRIPT_URL = "APNA_WEB_APP_URL_YAHAN_PASTE_KAREIN"
 
-# Data parhna (Read)
-df = conn.read(spreadsheet="https://docs.google.com/spreadsheets/d/1MjbmnCfZYf7V1SWOxoryfIAy9pL_25IpanU0qTzRwCw/edit?usp=sharing")
-
-# --- FORM INTERFACE ---
 with st.form("maintenance_form"):
-    inspector_name = st.text_input("Inspector Name")
-    asset_list = ["1. HMD", "2. Loop Scanner", "3. Pyrometer"]
-    selected_asset = st.selectbox("Select Asset", asset_list)
+    inspector = st.text_input("Inspector Name")
+    asset = st.selectbox("Select Asset", ["HMD", "Loop Scanner", "Pyrometer"])
     remarks = st.text_area("Remarks")
-    
     submit = st.form_submit_button("Submit")
 
     if submit:
-        if inspector_name:
-            # Naya data purane data mein add karna
-            new_data = pd.DataFrame([{
-                "Inspector Name": inspector_name,
-                "Asset": selected_asset,
-                "Remarks": remarks
-            }])
-            updated_df = pd.concat([df, new_data], ignore_index=True)
+        if inspector:
+            # Data bhejna
+            payload = {"inspector": inspector, "asset": asset, "remarks": remarks}
+            response = requests.post(SCRIPT_URL, json=payload)
             
-            # Wapas Sheet mein likhna (Update)
-            conn.update(spreadsheet="https://docs.google.com/spreadsheets/d/1MjbmnCfZYf7V1SWOxoryfIAy9pL_25IpanU0qTzRwCw/edit?usp=sharing", data=updated_df)
-            st.success("Data Submitted!")
+            if response.text == "Success":
+                st.success("✅ Data Sheet mein chala gaya!")
+                st.balloons()
+            else:
+                st.error("❌ Kuch galti hui hai.")
         else:
-            st.error("Please enter Inspector Name")
-
-st.dataframe(df)
+            st.warning("Please enter Inspector Name")
