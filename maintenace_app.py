@@ -3,11 +3,12 @@ import requests
 
 st.set_page_config(page_title="RM E&I Automation", page_icon="🛠️")
 
+# Title and Logo look (as per your request)
 st.title("🛠️ RM E&I Maintenance Automation")
 
 # --- APNA URL YAHAN PASTE KAREIN ---
-# Jo URL aapne Apps Script se copy kiya hai, usay niche wale quotes " " ke andar daalein
-SCRIPT_URL = "https://script.google.com/macros/library/d/1rkg0F1-sn974tWCUfcE2AkfJcie4pHWK5v6VPRsf2NyLlm0cwTcP9DxQ/1"
+ "https://script.google.com/macros/s/AKfycbzkhwqUc2fYB-9O1dV1LoB6kBAl8E-ZG_xffr5upYf8FKi9xvlt0vVXOa4K30sJMGK4mg/exec "
+SCRIPT_URL = "PASTE_YOUR_COPIED_LINK_HERE"
 
 with st.form("maintenance_form"):
     st.subheader("Inspection Details")
@@ -25,11 +26,11 @@ with st.form("maintenance_form"):
     
     remarks = st.text_area("Remarks / Observations")
     
-    submit = st.form_submit_button("Submit Data")
+    submit = st.form_submit_button("Submit")
 
     if submit:
         if inspector:
-            # Data taiyar karna
+            # Data pack kar ke bhejna
             payload = {
                 "inspector": inspector, 
                 "asset": asset, 
@@ -37,18 +38,18 @@ with st.form("maintenance_form"):
             }
             
             try:
-                # Google Sheet ko data bhejna
+                # Script ko request bhejna
                 response = requests.post(SCRIPT_URL, json=payload)
                 
-                if response.text == "Success":
-                    st.success(f"✅ Shukriya {inspector}! Data Sheet mein save ho gaya hai.")
+                if "Success" in response.text:
+                    st.success(f"✅ Shukriya {inspector}! Data save ho gaya.")
                     st.balloons()
                 else:
-                    st.error("❌ Error: Sheet ne data qubool nahi kiya.")
+                    st.error("❌ Kuch galti hui: " + response.text)
             except Exception as e:
                 st.error(f"❌ Connection Fail: {e}")
         else:
-            st.warning("⚠️ Inspector Name likhna zaroori hai!")
+            st.warning("⚠️ Name likhna zaroori hai.")
 
 st.markdown("---")
-st.caption("RM Maintenance System - Powered by Streamlit")
+st.caption("RM Maintenance System")
