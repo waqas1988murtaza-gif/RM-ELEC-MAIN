@@ -1,59 +1,38 @@
 import streamlit as st
 import requests
 
-# Page settings for a cleaner look
-st.set_page_config(page_title="RM E&I Automation", page_icon="⚙️", layout="centered")
+st.set_page_config(page_title="RM E&I Automation", page_icon="⚙️")
 
-# Custom CSS for better styling
+# Custom Styling
 st.markdown("""
     <style>
-    .main { background-color: #f5f7f9; }
-    .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #007bff; color: white; font-weight: bold; }
-    .stTextInput>div>div>input, .stSelectbox>div>div>select { border-radius: 5px; }
+    .stButton>button { width: 100%; background-color: #007bff; color: white; border-radius: 8px; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# Header with Logo
-st.image("https://cdn-icons-png.flaticon.com/512/2942/2942503.png", width=70)
-st.title("RM E&I Maintenance Log")
-st.write("---")
+st.title("⚙️ RM E&I Log System")
+st.write("Enter maintenance details below:")
 
-# Your working Script URL
+# --- NAYA URL YAHAN DAALEIN ---
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyObsneunsz5XCcdQBxXGP3dN585OHApUCH4ylrOLgFE86FUvG01jXWtC57QI8KKbIjw/exec"
 
-# Simple Form
 with st.container():
-    inspector = st.text_input("👤 Inspector Name", placeholder="Enter Name")
-    
-    asset = st.selectbox("🏗️ Select Asset", [
-        "HMD (Hot Metal Detector)", 
-        "Loop Scanner", 
-        "Pyrometer", 
-        "Solenoid Valve", 
-        "Limit Switch"
-    ])
-    
-    remarks = st.text_area("📝 Remarks", placeholder="Write any observation here...")
+    name = st.text_input("👤 Inspector Name")
+    asset = st.selectbox("🏗️ Select Asset", ["HMD", "Loop Scanner", "Pyrometer", "Solenoid Valve", "Limit Switch"])
+    obs = st.text_area("📝 Remarks")
 
     if st.button("🚀 Submit Data"):
-        if inspector:
-            with st.spinner("Saving..."):
-                payload = {
-                    "inspector": inspector,
-                    "asset": asset,
-                    "remarks": remarks
-                }
+        if name:
+            with st.spinner("Processing..."):
+                payload = {"inspector": name, "asset": asset, "remarks": obs}
                 try:
-                    response = requests.post(SCRIPT_URL, json=payload, timeout=10)
-                    if "Success" in response.text:
-                        st.success(f"✅ Data for {inspector} saved successfully!")
+                    res = requests.post(SCRIPT_URL, json=payload, timeout=10)
+                    if "Success" in res.text:
+                        st.success(f"✅ Saved: {name}")
                         st.balloons()
                     else:
-                        st.error("❌ Failed to save.")
+                        st.error("Server Issue!")
                 except Exception as e:
-                    st.error(f"❌ Error: {e}")
+                    st.error(f"Error: {e}")
         else:
-            st.warning("⚠️ Please enter your name first.")
-
-st.write("---")
-st.caption("RM Electrical & Instrumentation Team | 2026")
+            st.warning("Please enter name.")
