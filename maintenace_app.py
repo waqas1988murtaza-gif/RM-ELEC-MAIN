@@ -19,7 +19,7 @@ st.title("RM E&I Maintenance Log")
 st.write("---")
 
 # Your working Script URL
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkhwqUc2fYB-9O1dV1LoB6kBA18E-ZG_xffr5upYf8FKi9xvlt0vVX0a4K30sJMGK4/exec"
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyObsneunsz5XCcdQBxXGP3dN585OHApUCH4ylrOLgFE86FUvG01jXWtC57QI8KKbIjw/exec"
 
 # Simple Form
 with st.container():
