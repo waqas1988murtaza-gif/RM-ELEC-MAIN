@@ -5,109 +5,142 @@ from datetime import datetime
 # Page Configuration
 st.set_page_config(page_title="Naveena Steel - RM E&I", page_icon="🏗️", layout="wide")
 
-# Professional Industry Theme
+# Custom CSS for Naveena Steel Theme
 st.markdown("""
     <style>
-    .main { background-color: #f4f7f9; }
-    .stButton>button { width: 100%; background-color: #1d3557; color: white; border-radius: 8px; font-weight: bold; height: 3.5em; border: none; }
-    .stButton>button:hover { background-color: #457b9d; color: white; }
-    h1 { color: #1d3557; font-family: 'Helvetica Neue', sans-serif; font-weight: 800; }
-    .stCheckbox { font-size: 18px; padding: 5px; }
-    .css-1544g2n { padding: 2rem 1rem 1.5rem; }
+    .main { background-color: #f8f9fa; }
+    .stButton>button { width: 100%; background-color: #1d3557; color: white; border-radius: 8px; font-weight: bold; height: 3.5em; }
+    h1 { color: #1d3557; text-align: center; font-weight: 800; }
+    .stCheckbox { font-size: 16px; }
+    .category-header { background-color: #1d3557; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
-# 1. Header with Official Logo
-col_logo, col_text = st.columns([1, 3])
+# 1. Header & Branding
+col_logo, col_head = st.columns([1, 4])
 with col_logo:
-    st.image("https://naveenasteel.com/wp-content/uploads/2020/06/Naveena-Steel-Logo.png", width=200)
-with col_text:
-    st.title("RM E&I Maintenance Log System")
-    st.write(f"📅 **Date:** {datetime.now().strftime('%d-%m-%Y')} | 🕒 **Time:** {datetime.now().strftime('%I:%M %p')}")
+    st.image("https://naveenasteel.com/wp-content/uploads/2020/06/Naveena-Steel-Logo.png", width=180)
+with col_head:
+    st.title("RM Electrical & Automation Maintenance Log")
+    st.write(f"📅 {datetime.now().strftime('%d-%b-%Y')} | 🕒 {datetime.now().strftime('%I:%M %p')} | **Shift A & B (12 Hours)**")
 
-st.markdown("---")
+st.write("---")
 
-# --- YOUR WORKING SCRIPT URL ---
+# --- SCRIPT URL (Don't forget to update this if needed) ---
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkhwqUc2fYB-9O1dV1LoB6kBA18E-ZG_xffr5upYf8FKi9xvlt0vVX0a4K30sJMGK4/exec"
 
+# 2. User & Equipment Selection
 with st.container():
-    # Top Section: User Info
     c1, c2, c3 = st.columns(3)
     with c1:
-        inspector = st.text_input("👤 Inspector Name", placeholder="Type your name...")
+        inspector = st.text_input("👤 Inspector Name", placeholder="Enter Name")
     with c2:
-        # Fixed 12-Hour Shifts: Only A and B
-        shift = st.radio("🕒 Select 12-Hour Shift", ["Shift A", "Shift B"], horizontal=True)
+        shift = st.radio("🕒 Select Shift", ["Shift A", "Shift B"], horizontal=True)
     with c3:
-        asset_list = ["HMD", "Loop Scanner", "Pyrometer", "Solenoid Valve", "Limit Switch", "Control Panel"]
-        selected_asset = st.selectbox("🏗️ Select Equipment", asset_list)
+        # Saare 19 items aapki list ke mutabiq
+        equipment_list = [
+            "1. HMD (Hot Metal Detector)", "2. Pyrometer", "3. Loop Scanner",
+            "4. Mill Stand Motors", "5. Shear Motors", "6. Pinch Roll Motor",
+            "7. Roller Table Motors", "8. Cooling Bed BLVs", "9. BLS",
+            "10. Binding Machines", "11. TS Panels", "12. ET IH (Panels & Coils)",
+            "13. EOT Cranes", "14. Atlas Copco Compressors", "15. Pump House & Scale Filtration",
+            "16. Lathe & CNC Machines", "17. Transformers", "18. RHF (Panel & Motors)",
+            "19. MV Panel Room"
+        ]
+        selected_equipment = st.selectbox("🏗️ Select Equipment / Area", equipment_list)
 
-    st.markdown("### 🔍 Technical Checklist")
-    st.info(f"Please complete the mandatory checks for **{selected_asset}**")
-    
-    # Checklist Logic based on your requirement
-    checks = []
-    col_a, col_b = st.columns(2)
+st.markdown(f"<div class='category-header'>🔍 Maintenance Checklist: {selected_equipment}</div>", unsafe_allow_html=True)
 
-    if selected_asset == "HMD":
+# 3. Dynamic Checkboxes according to your Excel Sheet
+checks = []
+col_a, col_b = st.columns(2)
+
+with st.container():
+    # Automation & Sensors
+    if "HMD" in selected_equipment:
         with col_a:
-            if st.checkbox("✅ Glass Cleaning Done"): checks.append("Glass Cleaned")
-            if st.checkbox("✅ Air Purging Pressure OK"): checks.append("Air OK")
+            if st.checkbox("Lens/Glass Cleaning"): checks.append("Lens Clean")
+            if st.checkbox("Alignment Check"): checks.append("Alignment OK")
         with col_b:
-            if st.checkbox("✅ Water Circulation Flow Check"): checks.append("Water OK")
-            if st.checkbox("✅ Sensing/Signal Feedback Test"): checks.append("Sensing OK")
+            if st.checkbox("Air Purging Flow"): checks.append("Air OK")
+            if st.checkbox("Power/Signal LED Status"): checks.append("LED OK")
 
-    elif selected_asset == "Loop Scanner":
+    elif "Pyrometer" in selected_equipment:
         with col_a:
-            if st.checkbox("✅ Lens Cleaning Done"): checks.append("Lens Cleaned")
-            if st.checkbox("✅ Internal Cooling Fan Check"): checks.append("Cooling OK")
+            if st.checkbox("Optical Lens Cleaning"): checks.append("Lens Clean")
+            if st.checkbox("Sighting Window Check"): checks.append("Window OK")
         with col_b:
-            if st.checkbox("✅ Mounting & Alignment Check"): checks.append("Mounting OK")
-            if st.checkbox("✅ Cable Insulation/Connection"): checks.append("Cable OK")
+            if st.checkbox("Display Reading vs Reference"): checks.append("Reading OK")
+            if st.checkbox("Cable/Connector Inspection"): checks.append("Cable OK")
 
-    elif selected_asset == "Pyrometer":
+    elif "Loop Scanner" in selected_equipment:
         with col_a:
-            if st.checkbox("✅ Optical Lens Cleaning"): checks.append("Lens Cleaned")
-            if st.checkbox("✅ Air Purging Line Check"): checks.append("Air OK")
+            if st.checkbox("Sensor Face Cleaning"): checks.append("Face Clean")
+            if st.checkbox("HMI Reading Verification"): checks.append("HMI OK")
         with col_b:
-            if st.checkbox("✅ Temperature Accuracy Test"): checks.append("Temp OK")
-            if st.checkbox("✅ Alignment with Hot Metal"): checks.append("Alignment OK")
+            if st.checkbox("Mounting Bracket Stability"): checks.append("Mounting OK")
+            if st.checkbox("Cooling/Air Check"): checks.append("Cooling OK")
+
+    # Motors & Power
+    elif "Motor" in selected_equipment or "Shear" in selected_equipment:
+        with col_a:
+            if st.checkbox("Sound & Vibration Check"): checks.append("Vibration OK")
+            if st.checkbox("Cooling Blower/Fan Status"): checks.append("Blower OK")
+        with col_b:
+            if st.checkbox("VFD/Drive Fault Log Check"): checks.append("No Faults")
+            if st.checkbox("Terminal Box Inspection"): checks.append("Terminals OK")
+
+    elif "Transformers" in selected_equipment:
+        with col_a:
+            if st.checkbox("Oil Level Check"): checks.append("Oil OK")
+            if st.checkbox("Winding/Oil Temperature"): checks.append("Temp OK")
+        with col_b:
+            if st.checkbox("Silica Gel Condition"): checks.append("Silica Gel OK")
+            if st.checkbox("Terminal/Bushings Inspection"): checks.append("Terminals OK")
+
+    elif "MV Panel" in selected_equipment or "TS Panels" in selected_equipment:
+        with col_a:
+            if st.checkbox("Panel Cleaning & Inspection"): checks.append("Cleaned")
+            if st.checkbox("Indication Lamps Check"): checks.append("Indications OK")
+        with col_b:
+            if st.checkbox("KWh/Reading Recording"): checks.append("Reading Taken")
+            if st.checkbox("Relay/VCB Status Check"): checks.append("VCB OK")
 
     else:
         with col_a:
-            if st.checkbox("✅ Physical Condition/Cleaning"): checks.append("Physical OK")
-            if st.checkbox("✅ Terminal Tightness (Electrical)"): checks.append("Terminals OK")
+            if st.checkbox("General Cleaning Done"): checks.append("Cleaned")
+            if st.checkbox("Visual Inspection OK"): checks.append("Visual OK")
         with col_b:
-            if st.checkbox("✅ Operational Signal Check"): checks.append("Operation OK")
-
-    st.markdown("---")
-
-    # Final Remarks
-    remarks_input = st.text_area("📝 Additional Remarks (Optional)", placeholder="Enter details of any fault or action taken...")
-    
-    # Formatting data for Sheet
-    combined_remarks = f"[{shift}] " + (", ".join(checks) if checks else "Routine Check") + f" | Details: {remarks_input}"
-
-    # Submit Button
-    if st.button("🚀 SUBMIT TO NAVEENA CLOUD"):
-        if inspector:
-            with st.spinner("Synchronizing with Database..."):
-                payload = {
-                    "inspector": inspector,
-                    "asset": selected_asset,
-                    "remarks": combined_remarks
-                }
-                try:
-                    response = requests.post(SCRIPT_URL, json=payload, timeout=12)
-                    if "Success" in response.text:
-                        st.success(f"✅ Data Logged! Excellent work, {inspector}.")
-                        st.balloons()
-                    else:
-                        st.error("❌ Error: Sheet connection failed. Check Web App URL.")
-                except Exception as e:
-                    st.error(f"❌ Connection Error: {e}")
-        else:
-            st.warning("⚠️ Enter your name first!")
+            if st.checkbox("Operational Test Successful"): checks.append("Operational OK")
+            if st.checkbox("Wiring/Connection Check"): checks.append("Wiring OK")
 
 st.markdown("---")
-st.caption("© 2026 Naveena Steel Mills | RM Electrical & Instrumentation Department")
+
+# 4. Remarks and Submission
+remarks_text = st.text_area("📝 Remarks / Issues Found", placeholder="Detail any faults, abnormal sounds, or repairs done...")
+
+if st.button("🚀 SUBMIT LOG TO NAVEENA CLOUD"):
+    if inspector:
+        with st.spinner("Logging data..."):
+            # Sab kuch ek line mein merge karna sheet ke liye
+            formatted_remarks = f"[{shift}] " + (", ".join(checks) if checks else "Routine Check") + f" | Remarks: {remarks_text}"
+            
+            payload = {
+                "inspector": inspector,
+                "asset": selected_equipment,
+                "remarks": formatted_remarks
+            }
+            try:
+                response = requests.post(SCRIPT_URL, json=payload, timeout=12)
+                if "Success" in response.text:
+                    st.success(f"✅ Successful! Thank you {inspector} for the update.")
+                    st.balloons()
+                else:
+                    st.error("❌ Submission Failed. Check Google Script URL.")
+            except Exception as e:
+                st.error(f"❌ Connection Error: {e}")
+    else:
+        st.warning("⚠️ Please enter your name before submitting.")
+
+st.write("---")
+st.caption("Developed for RM Electrical & Automation Department | Naveena Steel Mills")
