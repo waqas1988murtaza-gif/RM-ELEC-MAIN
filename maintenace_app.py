@@ -1,111 +1,113 @@
 import streamlit as st
 import requests
 from datetime import datetime
-import pandas as pd
 
-# Page Configuration for Wide Layout
-st.set_page_config(page_title="Naveena Steel - RM Maintenance Automation", page_icon="🏗️", layout="wide")
+# Page Configuration
+st.set_page_config(page_title="Naveena Steel - RM E&I", page_icon="🏗️", layout="wide")
 
-# Custom CSS for Colorful Professional Theme
+# Professional Industry Theme
 st.markdown("""
     <style>
-    .main { background-color: #e9ecef; }
-    .stSidebar { background-color: #1d3557; color: white; }
-    h1 { color: #1d3557; text-align: center; }
-    .status-card { padding: 15px; border-radius: 8px; background-color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;}
-    .stButton>button { width: 100%; border-radius: 8px; height: 3em; background-color: #007bff; color: white; font-weight: bold;}
-    .stTab { background-color: #f8f9fa; border-radius: 8px;}
+    .main { background-color: #f4f7f9; }
+    .stButton>button { width: 100%; background-color: #1d3557; color: white; border-radius: 8px; font-weight: bold; height: 3.5em; border: none; }
+    .stButton>button:hover { background-color: #457b9d; color: white; }
+    h1 { color: #1d3557; font-family: 'Helvetica Neue', sans-serif; font-weight: 800; }
+    .stCheckbox { font-size: 18px; padding: 5px; }
+    .css-1544g2n { padding: 2rem 1rem 1.5rem; }
     </style>
     """, unsafe_allow_html=True)
 
-# sidebar structure
-with st.sidebar:
+# 1. Header with Official Logo
+col_logo, col_text = st.columns([1, 3])
+with col_logo:
     st.image("https://naveenasteel.com/wp-content/uploads/2020/06/Naveena-Steel-Logo.png", width=200)
-    st.title("Admin Panel")
-    st.info("⚡ System is Online ✅")
-    st.markdown("---")
-    st.write("🛠️ **Asset Categories:** 5")
-    st.write("📅 **Date:** " + pd.Timestamp.now().strftime("%d-%b-%Y"))
-    st.write("Shift: main")
-
-# Main Header
-st.title("🏗️ RM E&I Maintenance Automation")
-st.markdown("Enter maintenance details below to log data to Google Sheets.")
-st.write(f"📅 **Date:** {datetime.now().strftime('%d-%b-%Y')} | 🕒 **Time:** {datetime.now().strftime('%I:%M %p')}")
-st.write("---")
-
-# --- NAYA URL YAHAN DAALEIN ---
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyObsneunsz5XCcdQBxXGP3dN585OHApUCH4ylrOLgFE86FUvG01jXWtC57QI8KKbIjw/exec"
-
-# Tabs for organize the view
-tab1, tab2 = st.tabs(["📝 Inspection Form", "📂 Recent Logs"])
-
-with tab1:
-    with st.container():
-        inspector = st.text_input("👤 Inspector Name", placeholder="Enter your full name")
-        
-        asset_list = [
-            "HMD (Hot Metal Detector)", 
-            "Loop Scanner", 
-            "Pyrometer", 
-            "Solenoid Valve", 
-            "Limit Switch"
-        ]
-        asset = st.selectbox("🏗️ Select Asset", asset_list)
-        
-        # --- Specific Condition Checkboxes for HMD ---
-        hmd_checks = []
-        if asset == "HMD (Hot Metal Detector)":
-            st.write("🔍 **HMD Checklist:**")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                glass_clean = st.checkbox("Glass Cleaned?", value=False)
-                if glass_clean: hmd_checks.append("Glass Cleaned")
-            with col2:
-                air_check = st.checkbox("Air Pressure OK?", value=False)
-                if air_check: hmd_checks.append("Air OK")
-            with col3:
-                water_circulation = st.checkbox("Water Circulation OK?", value=False)
-                if water_circulation: hmd_checks.append("Water OK")
-                sensing_check = st.checkbox("Sensing Working?", value=False)
-                if sensing_check: hmd_checks.append("Sensing OK")
-
-        # Combining specific checks into remarks
-        checks_text = ", ".join(hmd_checks)
-        if checks_text:
-            final_remarks = f"Checks: {checks_text}. "
-        else:
-            final_remarks = ""
-
-        raw_remarks = st.text_area("📝 Additional Remarks", placeholder="Write any extra observations here...")
-        remarks = final_remarks + raw_remarks
-
-        # Colorful Submit Button
-        if st.button("🚀 Submit Data to Cloud"):
-            if inspector and asset:
-                with st.spinner("Processing..."):
-                    payload = {
-                        "inspector": inspector,
-                        "asset": asset,
-                        "remarks": remarks
-                    }
-                    try:
-                        # Adding timeout to prevent hanging
-                        response = requests.post(SCRIPT_URL, json=payload, timeout=10)
-                        if "Success" in response.text:
-                            st.success(f"✅ Data for {inspector} regarding {asset} saved successfully!")
-                            st.balloons()
-                        else:
-                            st.error(f"❌ Server Error: {response.text}")
-                    except Exception as e:
-                        st.error(f"❌ Connection Fail: {e}")
-            else:
-                st.warning("⚠️ Please enter Inspector Name.")
-
-with tab2:
-    st.subheader("Sheet Logs")
-    st.write("Recent entries from Google Sheet will appear here. Press to open full sheet.")
-    st.link_button("📂 Open Google Sheet", "https://docs.google.com/spreadsheets/d/1NilFTCm_6L9yhjVeqkr6tBC9EwU32vOmS8AkY_syPKk/edit")
+with col_text:
+    st.title("RM E&I Maintenance Log System")
+    st.write(f"📅 **Date:** {datetime.now().strftime('%d-%m-%Y')} | 🕒 **Time:** {datetime.now().strftime('%I:%M %p')}")
 
 st.markdown("---")
-st.caption("Developed for RM Electrical & Instrumentation | Naveena Steel")
+
+# --- YOUR WORKING SCRIPT URL ---
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkhwqUc2fYB-9O1dV1LoB6kBA18E-ZG_xffr5upYf8FKi9xvlt0vVX0a4K30sJMGK4/exec"
+
+with st.container():
+    # Top Section: User Info
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        inspector = st.text_input("👤 Inspector Name", placeholder="Type your name...")
+    with c2:
+        # Fixed 12-Hour Shifts: Only A and B
+        shift = st.radio("🕒 Select 12-Hour Shift", ["Shift A", "Shift B"], horizontal=True)
+    with c3:
+        asset_list = ["HMD", "Loop Scanner", "Pyrometer", "Solenoid Valve", "Limit Switch", "Control Panel"]
+        selected_asset = st.selectbox("🏗️ Select Equipment", asset_list)
+
+    st.markdown("### 🔍 Technical Checklist")
+    st.info(f"Please complete the mandatory checks for **{selected_asset}**")
+    
+    # Checklist Logic based on your requirement
+    checks = []
+    col_a, col_b = st.columns(2)
+
+    if selected_asset == "HMD":
+        with col_a:
+            if st.checkbox("✅ Glass Cleaning Done"): checks.append("Glass Cleaned")
+            if st.checkbox("✅ Air Purging Pressure OK"): checks.append("Air OK")
+        with col_b:
+            if st.checkbox("✅ Water Circulation Flow Check"): checks.append("Water OK")
+            if st.checkbox("✅ Sensing/Signal Feedback Test"): checks.append("Sensing OK")
+
+    elif selected_asset == "Loop Scanner":
+        with col_a:
+            if st.checkbox("✅ Lens Cleaning Done"): checks.append("Lens Cleaned")
+            if st.checkbox("✅ Internal Cooling Fan Check"): checks.append("Cooling OK")
+        with col_b:
+            if st.checkbox("✅ Mounting & Alignment Check"): checks.append("Mounting OK")
+            if st.checkbox("✅ Cable Insulation/Connection"): checks.append("Cable OK")
+
+    elif selected_asset == "Pyrometer":
+        with col_a:
+            if st.checkbox("✅ Optical Lens Cleaning"): checks.append("Lens Cleaned")
+            if st.checkbox("✅ Air Purging Line Check"): checks.append("Air OK")
+        with col_b:
+            if st.checkbox("✅ Temperature Accuracy Test"): checks.append("Temp OK")
+            if st.checkbox("✅ Alignment with Hot Metal"): checks.append("Alignment OK")
+
+    else:
+        with col_a:
+            if st.checkbox("✅ Physical Condition/Cleaning"): checks.append("Physical OK")
+            if st.checkbox("✅ Terminal Tightness (Electrical)"): checks.append("Terminals OK")
+        with col_b:
+            if st.checkbox("✅ Operational Signal Check"): checks.append("Operation OK")
+
+    st.markdown("---")
+
+    # Final Remarks
+    remarks_input = st.text_area("📝 Additional Remarks (Optional)", placeholder="Enter details of any fault or action taken...")
+    
+    # Formatting data for Sheet
+    combined_remarks = f"[{shift}] " + (", ".join(checks) if checks else "Routine Check") + f" | Details: {remarks_input}"
+
+    # Submit Button
+    if st.button("🚀 SUBMIT TO NAVEENA CLOUD"):
+        if inspector:
+            with st.spinner("Synchronizing with Database..."):
+                payload = {
+                    "inspector": inspector,
+                    "asset": selected_asset,
+                    "remarks": combined_remarks
+                }
+                try:
+                    response = requests.post(SCRIPT_URL, json=payload, timeout=12)
+                    if "Success" in response.text:
+                        st.success(f"✅ Data Logged! Excellent work, {inspector}.")
+                        st.balloons()
+                    else:
+                        st.error("❌ Error: Sheet connection failed. Check Web App URL.")
+                except Exception as e:
+                    st.error(f"❌ Connection Error: {e}")
+        else:
+            st.warning("⚠️ Enter your name first!")
+
+st.markdown("---")
+st.caption("© 2026 Naveena Steel Mills | RM Electrical & Instrumentation Department")
