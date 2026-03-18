@@ -5,7 +5,7 @@ st.set_page_config(page_title="RM E&I Automation", page_icon="🛠️")
 st.title("🛠️ RM E&I Maintenance Automation")
 
 # Naya URL yahan paste karein
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkhwqUc2fYB-9O1dV1LoB6kBAl8E-ZG_xffr5upYf8FKi9xvlt0vVXOa4K30sJMGK4mg/exec"
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyObsneunsz5XCcdQBxXGP3dN585OHApUCH4ylrOLgFE86FUvG01jXWtC57QI8KKbIjw/exec"
 
 with st.form("maintenance_form", clear_on_submit=True):
     st.subheader("Inspection Details")
