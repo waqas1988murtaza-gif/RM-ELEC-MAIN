@@ -2,145 +2,106 @@ import streamlit as st
 import requests
 from datetime import datetime
 
-# Page Configuration
-st.set_page_config(page_title="Naveena Steel - RM E&I", page_icon="🏗️", layout="wide")
+# Page Settings
+st.set_page_config(page_title="Naveena Steel - RM E&I", page_icon="🏗️", layout="centered")
 
-# Custom CSS for Naveena Steel Theme
+# Custom Styling for Naveena Steel Theme
 st.markdown("""
     <style>
+    .stButton>button { width: 100%; background-color: #1d3557; color: white; border-radius: 8px; font-weight: bold; }
     .main { background-color: #f8f9fa; }
-    .stButton>button { width: 100%; background-color: #1d3557; color: white; border-radius: 8px; font-weight: bold; height: 3.5em; }
-    h1 { color: #1d3557; text-align: center; font-weight: 800; }
-    .stCheckbox { font-size: 16px; }
-    .category-header { background-color: #1d3557; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+    .header-style { color: #1d3557; text-align: center; font-size: 30px; font-weight: bold; margin-bottom: 0px; }
+    .checklist-box { background-color: #f1f4f9; padding: 15px; border-radius: 10px; border-left: 5px solid #1d3557; }
     </style>
     """, unsafe_allow_html=True)
 
-# 1. Header & Branding
-col_logo, col_head = st.columns([1, 4])
-with col_logo:
-    st.image("https://naveenasteel.com/wp-content/uploads/2020/06/Naveena-Steel-Logo.png", width=180)
-with col_head:
-    st.title("RM Electrical & Automation Maintenance Log")
-    st.write(f"📅 {datetime.now().strftime('%d-%b-%Y')} | 🕒 {datetime.now().strftime('%I:%M %p')} | **Shift A & B (12 Hours)**")
+# 1. Naveena Steel Logo (Using your uploaded file)
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image("download.png", use_container_width=True) # Yeh aapka upload kiya hua logo hai
 
+st.markdown('<p class="header-style">RM Electrical & Automation Maintenance Log</p>', unsafe_allow_html=True)
+st.write(f"<center>📅 {datetime.now().strftime('%d-%b-%Y')} | 🕒 {datetime.now().strftime('%I:%M %p')}</center>", unsafe_allow_html=True)
 st.write("---")
 
-# --- SCRIPT URL (Don't forget to update this if needed) ---
+# URL (Make sure this is your latest Web App URL)
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyObsneunsz5XCcdQBxXGP3dN585OHApUCH4ylrOLgFE86FUvG01jXWtC57QI8KKbIjw/exec"
 
-# 2. User & Equipment Selection
+# Form
 with st.container():
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        inspector = st.text_input("👤 Inspector Name", placeholder="Enter Name")
-    with c2:
+    col_a, col_b = st.columns(2)
+    with col_a:
+        inspector = st.text_input("👤 Inspector Name", placeholder="e.g. Anwar")
+    with col_b:
         shift = st.radio("🕒 Select Shift", ["Shift A", "Shift B"], horizontal=True)
-    with c3:
-        # Saare 19 items aapki list ke mutabiq
-        equipment_list = [
-            "1. HMD (Hot Metal Detector)", "2. Pyrometer", "3. Loop Scanner",
-            "4. Mill Stand Motors", "5. Shear Motors", "6. Pinch Roll Motor",
-            "7. Roller Table Motors", "8. Cooling Bed BLVs", "9. BLS",
-            "10. Binding Machines", "11. TS Panels", "12. ET IH (Panels & Coils)",
-            "13. EOT Cranes", "14. Atlas Copco Compressors", "15. Pump House & Scale Filtration",
-            "16. Lathe & CNC Machines", "17. Transformers", "18. RHF (Panel & Motors)",
-            "19. MV Panel Room"
-        ]
-        selected_equipment = st.selectbox("🏗️ Select Equipment / Area", equipment_list)
 
-st.markdown(f"<div class='category-header'>🔍 Maintenance Checklist: {selected_equipment}</div>", unsafe_allow_html=True)
+    asset = st.selectbox("🏗️ Select Equipment / Area", [
+        "HMD (Hot Metal Detector)", 
+        "Loop Scanner", 
+        "Pyrometer", 
+        "Solenoid Valve", 
+        "Limit Switch",
+        "Binding Machines"
+    ])
 
-# 3. Dynamic Checkboxes according to your Excel Sheet
-checks = []
-col_a, col_b = st.columns(2)
-
-with st.container():
-    # Automation & Sensors
-    if "HMD" in selected_equipment:
-        with col_a:
-            if st.checkbox("Lens/Glass Cleaning"): checks.append("Lens Clean")
-            if st.checkbox("Alignment Check"): checks.append("Alignment OK")
-        with col_b:
-            if st.checkbox("Air Purging Flow"): checks.append("Air OK")
-            if st.checkbox("Power/Signal LED Status"): checks.append("LED OK")
-
-    elif "Pyrometer" in selected_equipment:
-        with col_a:
-            if st.checkbox("Optical Lens Cleaning"): checks.append("Lens Clean")
-            if st.checkbox("Sighting Window Check"): checks.append("Window OK")
-        with col_b:
-            if st.checkbox("Display Reading vs Reference"): checks.append("Reading OK")
-            if st.checkbox("Cable/Connector Inspection"): checks.append("Cable OK")
-
-    elif "Loop Scanner" in selected_equipment:
-        with col_a:
-            if st.checkbox("Sensor Face Cleaning"): checks.append("Face Clean")
-            if st.checkbox("HMI Reading Verification"): checks.append("HMI OK")
-        with col_b:
-            if st.checkbox("Mounting Bracket Stability"): checks.append("Mounting OK")
-            if st.checkbox("Cooling/Air Check"): checks.append("Cooling OK")
-
-    # Motors & Power
-    elif "Motor" in selected_equipment or "Shear" in selected_equipment:
-        with col_a:
-            if st.checkbox("Sound & Vibration Check"): checks.append("Vibration OK")
-            if st.checkbox("Cooling Blower/Fan Status"): checks.append("Blower OK")
-        with col_b:
-            if st.checkbox("VFD/Drive Fault Log Check"): checks.append("No Faults")
-            if st.checkbox("Terminal Box Inspection"): checks.append("Terminals OK")
-
-    elif "Transformers" in selected_equipment:
-        with col_a:
-            if st.checkbox("Oil Level Check"): checks.append("Oil OK")
-            if st.checkbox("Winding/Oil Temperature"): checks.append("Temp OK")
-        with col_b:
-            if st.checkbox("Silica Gel Condition"): checks.append("Silica Gel OK")
-            if st.checkbox("Terminal/Bushings Inspection"): checks.append("Terminals OK")
-
-    elif "MV Panel" in selected_equipment or "TS Panels" in selected_equipment:
-        with col_a:
-            if st.checkbox("Panel Cleaning & Inspection"): checks.append("Cleaned")
-            if st.checkbox("Indication Lamps Check"): checks.append("Indications OK")
-        with col_b:
-            if st.checkbox("KWh/Reading Recording"): checks.append("Reading Taken")
-            if st.checkbox("Relay/VCB Status Check"): checks.append("VCB OK")
-
-    else:
-        with col_a:
-            if st.checkbox("General Cleaning Done"): checks.append("Cleaned")
-            if st.checkbox("Visual Inspection OK"): checks.append("Visual OK")
-        with col_b:
-            if st.checkbox("Operational Test Successful"): checks.append("Operational OK")
-            if st.checkbox("Wiring/Connection Check"): checks.append("Wiring OK")
-
-st.markdown("---")
-
-# 4. Remarks and Submission
-remarks_text = st.text_area("📝 Remarks / Issues Found", placeholder="Detail any faults, abnormal sounds, or repairs done...")
-
-if st.button("🚀 SUBMIT LOG TO NAVEENA CLOUD"):
-    if inspector:
-        with st.spinner("Logging data..."):
-            # Sab kuch ek line mein merge karna sheet ke liye
-            formatted_remarks = f"[{shift}] " + (", ".join(checks) if checks else "Routine Check") + f" | Remarks: {remarks_text}"
+    # --- Dynamic Checklist Logic ---
+    st.markdown(f'<div class="checklist-box">🔍 <b>Maintenance Checklist: {asset}</b>', unsafe_allow_html=True)
+    checks = []
+    
+    c1, c2 = st.columns(2)
+    if "HMD" in asset:
+        with c1:
+            if st.checkbox("Glass Cleaned"): checks.append("Glass Clean")
+            if st.checkbox("Air Blowing Check"): checks.append("Air OK")
+        with c2:
+            if st.checkbox("Water Circulation"): checks.append("Water OK")
+            if st.checkbox("Sensing Check"): checks.append("Sensing OK")
             
-            payload = {
-                "inspector": inspector,
-                "asset": selected_equipment,
-                "remarks": formatted_remarks
-            }
-            try:
-                response = requests.post(SCRIPT_URL, json=payload, timeout=12)
-                if "Success" in response.text:
-                    st.success(f"✅ Successful! Thank you {inspector} for the update.")
-                    st.balloons()
-                else:
-                    st.error("❌ Submission Failed. Check Google Script URL.")
-            except Exception as e:
-                st.error(f"❌ Connection Error: {e}")
-    else:
-        st.warning("⚠️ Please enter your name before submitting.")
+    elif "Loop Scanner" in asset:
+        with c1:
+            if st.checkbox("Lens Cleaning"): checks.append("Lens Clean")
+            if st.checkbox("Mounting Tightness"): checks.append("Mounting OK")
+        with c2:
+            if st.checkbox("Signal Strength Check"): checks.append("Signal OK")
+            
+    elif "Pyrometer" in asset:
+        with c1:
+            if st.checkbox("Lens Cleaning"): checks.append("Lens Clean")
+            if st.checkbox("Focus Alignment"): checks.append("Focus OK")
+        with c2:
+            if st.checkbox("Cable Inspection"): checks.append("Cable OK")
+    
+    else: # General for others
+        with c1:
+            if st.checkbox("General Cleaning"): checks.append("Cleaning Done")
+            if st.checkbox("Visual Inspection"): checks.append("Visual OK")
+        with c2:
+            if st.checkbox("Wiring Check"): checks.append("Wiring OK")
+            if st.checkbox("Operational Test"): checks.append("Ops OK")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    remarks_found = st.text_area("📝 Additional Remarks / Issues Found")
+
+    if st.button("🚀 SUBMIT MAINTENANCE DATA"):
+        if inspector:
+            with st.spinner("Saving to Cloud..."):
+                final_remarks = f"[{shift}] Checks: {', '.join(checks)}. Notes: {remarks_found}"
+                payload = {
+                    "inspector": inspector,
+                    "asset": asset,
+                    "remarks": final_remarks
+                }
+                try:
+                    response = requests.post(SCRIPT_URL, json=payload, timeout=10)
+                    if "Success" in response.text:
+                        st.success(f"✅ Data Saved! Shukriya {inspector}.")
+                        st.balloons()
+                    else:
+                        st.error("❌ Failed to Save. Check Apps Script.")
+                except Exception as e:
+                    st.error(f"❌ Connection Error: {e}")
+        else:
+            st.warning("⚠️ Name likhna zaroori hai!")
 
 st.write("---")
-st.caption("Developed for RM Electrical & Automation Department | Naveena Steel Mills")
+st.caption("Developed for RM E&I Team | Naveena Steel")
