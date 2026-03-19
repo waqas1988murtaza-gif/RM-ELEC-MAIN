@@ -2,100 +2,81 @@ import streamlit as st
 import requests
 from datetime import datetime
 
-# Page Config
-st.set_page_config(page_title="Naveena Steel - RM E&I", page_icon="🏗️", layout="centered")
+st.set_page_config(page_title="Naveena Steel - RM Maintenance", page_icon="🏗️", layout="centered")
 
-# Custom CSS for Naveena Theme
+# Custom CSS
 st.markdown("""
     <style>
-    .stButton>button { width: 100%; background-color: #1d3557; color: white; border-radius: 8px; font-weight: bold; }
-    .checklist-box { background-color: #f1f4f9; padding: 15px; border-radius: 10px; border-left: 5px solid #1d3557; margin-bottom: 20px; }
+    .stButton>button { width: 100%; background-color: #1d3557; color: white; border-radius: 8px; font-weight: bold; height: 3em; }
+    .checklist-box { background-color: #f1f4f9; padding: 20px; border-radius: 10px; border-left: 10px solid #1d3557; }
     </style>
     """, unsafe_allow_html=True)
 
-# Logo aur Header
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.image("download.png", use_container_width=True)
+# Logo
+st.image("download.png", width=200)
+st.title("RM E&I Maintenance Log")
+st.write(f"📅 {datetime.now().strftime('%d-%b-%Y')} | 🕒 {datetime.now().strftime('%I:%M %p')}")
 
-st.markdown("<h2 style='text-align: center; color: #1d3557;'>RM E&I Maintenance Automation</h2>", unsafe_allow_html=True)
-st.write(f"<center>📅 {datetime.now().strftime('%d-%b-%Y')} | 🕒 {datetime.now().strftime('%I:%M %p')}</center>", unsafe_allow_html=True)
-st.write("---")
+# SCRIPT URL (Apna wala yahan daalein)
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZf9a8rIJSUJ0BCGIJLXO0bIiLvZCujELboKVt__GSn1crsYJuPbsy1MwDhOyIjdpKKg/exec"
 
-# Your Script URL
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyObsneunsz5XCcdQBxXGP3dN585OHApUCH4ylrOLgFE86FUvG01jXWtC57QI8KKbIjw/exec"
+# 19 Items Dictionary based on your Excel
+assets_data = {
+    "1. HMD": ["Clean lens/glass", "Check alignment", "Verify power LED status", "Air purging flow"],
+    "2. Pyrometer": ["Check display reading", "Verify sighting window clean", "4-20mA output check"],
+    "3. Loop Scanner": ["Verify loop height on HMI", "Check sensor status LEDs", "Clean sensor face"],
+    "4. Mill Stand Motors": ["Monitor sound/vibration", "Check VFD fault logs", "Verify cooling airflow"],
+    "5. Shear Motors": ["Monitor sound/vibration", "Check cooling fan airflow", "Inspect limit switches"],
+    "6. Pinch Roll Motor & Blower": ["Check motor vibration", "Inspect blower belt/coupling"],
+    "7. Roller Table Motors": ["Visual inspection of motors", "Check for abnormal heating"],
+    "8. Cooling Bed BLVs": ["Check blower operation", "Inspect control panel indicators"],
+    "9. BLS": ["Verify operational logic", "Check sensor feedback"],
+    "10. Binding Machines": ["Check hydraulic/electrical sync", "Inspect limit switches"],
+    "11. TS Panels": ["Check indicator lamps", "Verify selector switch positions"],
+    "12. ET IH (Panels & Coils)": ["Check coil insulation", "Monitor panel temperature"],
+    "13. EOT Cranes": ["Check hoist/long travel motors", "Inspect pendant/remote control"],
+    "14. Atlas Copco Compressors": ["Check oil/temp logs", "Check for abnormal alarms", "Take motor load"],
+    "15. Pump House & Filtration": ["Check pump motor temp", "Take load of motors", "Verify panel lamps"],
+    "16. Lathe & CNC Machines": ["Check ACs/Motors/HMI", "Visual check of wiring"],
+    "17. Transformers": ["Check Winding Temp", "Check Oil Temp", "Verify Terminals"],
+    "18. RHF Panels/Motors": ["Check instrument readings", "Visual panel inspection"],
+    "19. MV Panels": ["Take KWh Reading", "Check relay status", "Inspect VCB/Multimeter"]
+}
 
-# Form start
 with st.container():
-    c_a, c_b = st.columns(2)
-    with c_a:
+    col_name, col_shift = st.columns(2)
+    with col_name:
         inspector = st.text_input("👤 Inspector Name")
-    with c_b:
+    with col_shift:
         shift = st.radio("🕒 Shift", ["Shift A", "Shift B"], horizontal=True)
 
-    # 19 Items from Excel
-    asset_options = [
-        "1. HMD (Hot Metal Detector)", "2. Pyrometer", "3. Loop Scanner", 
-        "4. Mill Stand Motors", "5. Shear Motors", "6. Pinch Roll Motor & Blower",
-        "7. Roller Table Motors", "8. Cooling Bed BLVs", "9. BLS", 
-        "10. Binding Machines", "11. TS Panels", "12. ET IH (Panels & Coils)",
-        "13. EOT Cranes", "14. Atlas Copco Compressors", "15. Pump House & Filtration",
-        "16. Lathe & CNC Machines", "17. Transformers", "18. RHF Panels/Motors", "19. MV Panels"
-    ]
-    asset = st.selectbox("🏗️ Select Equipment (Excel Item)", asset_options)
-
-    # Checklist Logic based on your Excel Sheet
-    st.markdown(f'<div class="checklist-box"><b>🔍 Maintenance Checklist: {asset}</b>', unsafe_allow_html=True)
-    checks = []
+    asset_choice = st.selectbox("🏗️ Select Equipment", list(assets_data.keys()))
     
-    col_v1, col_v2 = st.columns(2)
+    # Checklist Display
+    st.markdown(f'<div class="checklist-box">🔍 <b>Daily Maintenance Checklist:</b>', unsafe_allow_html=True)
+    selected_checks = []
+    points = assets_data[asset_choice]
     
-    if "HMD" in asset:
-        with col_v1:
-            if st.checkbox("Clean lens/glass"): checks.append("Lens Clean")
-            if st.checkbox("Check alignment"): checks.append("Align OK")
-        with col_v2:
-            if st.checkbox("Verify power LED"): checks.append("LED OK")
-            if st.checkbox("Air purging check"): checks.append("Air OK")
-            
-    elif "Pyrometer" in asset:
-        with col_v1:
-            if st.checkbox("Check display reading"): checks.append("Display OK")
-        with col_v2:
-            if st.checkbox("Sighting window clean"): checks.append("Window Clean")
-            
-    elif "Mill Stand Motors" in asset:
-        with col_v1:
-            if st.checkbox("Monitor sound/vibration"): checks.append("Vibration OK")
-        with col_v2:
-            if st.checkbox("Check VFD fault logs"): checks.append("VFD Logs OK")
-
-    elif "Compressors" in asset:
-        with col_v1:
-            if st.checkbox("Check oil/temp logs"): checks.append("Logs OK")
-        with col_v2:
-            if st.checkbox("Abnormal alarm check"): checks.append("Alarms OK")
-    
-    else: # General for others
-        with col_v1:
-            if st.checkbox("Visual Inspection OK"): checks.append("Visual OK")
-        with col_v2:
-            if st.checkbox("Functional Test OK"): checks.append("Functional OK")
-
+    for point in points:
+        if st.checkbox(point):
+            selected_checks.append(point)
     st.markdown('</div>', unsafe_allow_html=True)
-    remarks = st.text_area("📝 Additional Remarks")
 
-    if st.button("🚀 SUBMIT TO SHEET"):
+    remarks = st.text_area("📝 Remarks / Issues Found")
+
+    if st.button("🚀 SUBMIT TO EXCEL"):
         if inspector:
-            with st.spinner("Uploading..."):
-                final_data = f"[{shift}] Checks: {', '.join(checks)}. {remarks}"
-                payload = {"inspector": inspector, "asset": asset, "remarks": final_data}
-                try:
-                    res = requests.post(SCRIPT_URL, json=payload, timeout=10)
-                    if "Success" in res.text:
-                        st.success("✅ Excel Record Updated!")
-                        st.balloons()
-                except:
-                    st.error("Connection Error!")
-        else:
-            st.warning("Please enter Inspector Name.")
+            payload = {
+                "inspector": inspector,
+                "shift": shift,
+                "asset": asset_choice,
+                "checks": ", ".join(selected_checks),
+                "remarks": remarks
+            }
+            try:
+                res = requests.post(SCRIPT_URL, json=payload, timeout=10)
+                if "Success" in res.text:
+                    st.success("✅ Data saved in Excel format!")
+                    st.balloons()
+            except:
+                st.error("Connection error!")
