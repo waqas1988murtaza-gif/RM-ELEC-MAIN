@@ -27,7 +27,7 @@ with col_head:
 st.write("---")
 
 # --- SCRIPT URL (Don't forget to update this if needed) ---
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkhwqUc2fYB-9O1dV1LoB6kBA18E-ZG_xffr5upYf8FKi9xvlt0vVX0a4K30sJMGK4/exec"
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyObsneunsz5XCcdQBxXGP3dN585OHApUCH4ylrOLgFE86FUvG01jXWtC57QI8KKbIjw/exec"
 
 # 2. User & Equipment Selection
 with st.container():
