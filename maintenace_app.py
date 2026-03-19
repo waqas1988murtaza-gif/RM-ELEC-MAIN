@@ -18,8 +18,7 @@ st.markdown("""
 # 1. Naveena Steel Logo (Using your uploaded file)
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    st.image("download.png", use_container_width=True) # Yeh aapka upload kiya hua logo hai
-
+   st.image("download.png", width=250)
 st.markdown('<p class="header-style">RM Electrical & Automation Maintenance Log</p>', unsafe_allow_html=True)
 st.write(f"<center>📅 {datetime.now().strftime('%d-%b-%Y')} | 🕒 {datetime.now().strftime('%I:%M %p')}</center>", unsafe_allow_html=True)
 st.write("---")
