@@ -1,35 +1,36 @@
 import streamlit as st
 import requests
 from datetime import datetime
-from google import genai  # Nayi library
+from google import genai  # Nayi library ka format
 
+# Page setup
 st.set_page_config(page_title="Naveena Steel - RM Maintenance", page_icon="🏗️", layout="centered")
 
-# --- 1. AI SETUP ---
-# Streamlit Secrets se key uthayega
+# --- AI SETUP ---
 if "GEMINI_API_KEY" in st.secrets:
     try:
+        # Nayi library (google-genai) ka client initialize karna
         client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
     except Exception as e:
         st.error(f"AI Setup Error: {e}")
 else:
     st.warning("⚠️ AI Key missing! Streamlit Secrets mein GEMINI_API_KEY add karein.")
 
-# --- Custom CSS ---
+# Custom CSS
 st.markdown("""
     <style>
     .stButton>button { width: 100%; background-color: #1d3557; color: white; border-radius: 8px; font-weight: bold; height: 3em; }
     .checklist-box { background-color: #f1f4f9; padding: 20px; border-radius: 10px; border-left: 10px solid #1d3557; margin-bottom: 20px; }
-    .ai-response { background-color: #e8f0fe; padding: 15px; border-radius: 10px; border: 1px solid #4285f4; color: #1d3557; }
+    .ai-response { background-color: #e8f0fe; padding: 15px; border-radius: 10px; border: 1px solid #4285f4; color: #1d3557; margin-top: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
 # Logo aur Title
-st.image("download.png", width=200)
+st.image("download.png", width=250)
 st.title("RM E&I Maintenance Log")
 st.write(f"📅 {datetime.now().strftime('%d-%b-%Y')} | 🕒 {datetime.now().strftime('%I:%M %p')}")
 
-# SCRIPT URL
+# Google Script URL (Excel ke liye)
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZf9a8rIJSUJ0BCGIJLXO0bIiLvZCujELboKVt__GSn1crsYJuPbsy1MwDhOyIjdpKKg/exec"
 
 # Aapke saare 19 Items
@@ -64,51 +65,42 @@ with st.container():
 
     asset_choice = st.selectbox("🏗️ Select Equipment", list(assets_data.keys()))
     
-    # Checklist Display
-    st.markdown(f'<div class="checklist-box">🔍 <b>Daily Maintenance Checklist:</b>', unsafe_allow_html=True)
+    st.markdown(f'<div class="checklist-box">🔍 <b>Maintenance Checklist:</b>', unsafe_allow_html=True)
     selected_checks = []
-    points = assets_data[asset_choice]
-    
-    for point in points:
+    for point in assets_data[asset_choice]:
         if st.checkbox(point):
             selected_checks.append(point)
     st.markdown('</div>', unsafe_allow_html=True)
 
     remarks = st.text_area("📝 Remarks / Issues Found (e.g. VFD overcurrent fault)")
 
-    # --- AI SOLUTION BUTTON ---
+    # --- AI ASSISTANT ---
     if remarks:
         if st.button("🤖 Ask AI for Fix?"):
             if "GEMINI_API_KEY" in st.secrets:
                 with st.spinner('Gemini AI solution dhoond raha hai...'):
                     try:
-                        prompt = f"I am a maintenance engineer at a steel mill. I found this issue: '{remarks}' in '{asset_choice}'. Give me 3-4 quick technical points to fix it in Roman Urdu (Hindustani)."
+                        # Naye format mein prompt bhejna
+                        prompt = f"Main Naveena Steel mein maintenance engineer hoon. {asset_choice} mein ye masla hai: '{remarks}'. Isay theek karne ke liye 3 zaroori technical points Roman Urdu mein batao."
                         response = client.models.generate_content(
                             model="gemini-1.5-flash",
                             contents=prompt
                         )
                         st.markdown(f'<div class="ai-response"><b>AI Suggestion:</b><br>{response.text}</div>', unsafe_allow_html=True)
                     except Exception as e:
-                        st.error(f"AI Error: {e}")
+                        st.error(f"AI Response Error: {e}")
             else:
-                st.error("Secrets mein API Key missing hai!")
+                st.error("API Key missing in Secrets!")
 
-    # Submit to Excel
+    # Submit Button
     if st.button("🚀 SUBMIT TO EXCEL"):
         if inspector:
-            payload = {
-                "inspector": inspector,
-                "shift": shift,
-                "asset": asset_choice,
-                "checks": ", ".join(selected_checks),
-                "remarks": remarks
-            }
+            payload = {"inspector": inspector, "shift": shift, "asset": asset_choice, "checks": ", ".join(selected_checks), "remarks": remarks}
             try:
                 res = requests.post(SCRIPT_URL, json=payload, timeout=10)
-                if "Success" in res.text:
-                    st.success("✅ Data saved in Excel format!")
-                    st.balloons()
+                st.success("✅ Data saved in Excel!")
+                st.balloons()
             except:
-                st.error("Connection error to Google Sheets!")
+                st.error("Google Sheets connection error!")
         else:
-            st.warning("Please enter Inspector Name first.")
+            st.warning("Inspector name likhen.")
