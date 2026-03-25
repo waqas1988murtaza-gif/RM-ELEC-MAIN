@@ -1,18 +1,21 @@
 import streamlit as st
 import requests
 from datetime import datetime
-from google import genai  # Nayi library ka format
+from google import genai
 
 # Page setup
 st.set_page_config(page_title="Naveena Steel - RM Maintenance", page_icon="🏗️", layout="centered")
 
-# --- AI SETUP ---
-if "GEMINI_API_KEY" in st.secrets:
+# --- AI SETUP (Direct Secrets Access) ---
+# Hum check kar rahe hain ke key mil rahi hai ya nahi
+api_key = st.secrets.get("GEMINI_API_KEY")
+
+if api_key:
     try:
-        # Nayi library (google-genai) ka client initialize karna
-        client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+        client = genai.Client(api_key=api_key)
+        # Agar key mil gayi to warning nahi dikhayenge
     except Exception as e:
-        st.error(f"AI Setup Error: {e}")
+        st.error(f"AI Connection Error: {e}")
 else:
     st.warning("⚠️ AI Key missing! Streamlit Secrets mein GEMINI_API_KEY add karein.")
 
@@ -30,10 +33,9 @@ st.image("download.png", width=250)
 st.title("RM E&I Maintenance Log")
 st.write(f"📅 {datetime.now().strftime('%d-%b-%Y')} | 🕒 {datetime.now().strftime('%I:%M %p')}")
 
-# Google Script URL (Excel ke liye)
+# SCRIPT URL
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZf9a8rIJSUJ0BCGIJLXO0bIiLvZCujELboKVt__GSn1crsYJuPbsy1MwDhOyIjdpKKg/exec"
 
-# Aapke saare 19 Items
 assets_data = {
     "1. HMD": ["Clean lens/glass", "Check alignment", "Verify power LED status", "Air purging flow"],
     "2. Pyrometer": ["Check display reading", "Verify sighting window clean", "4-20mA output check"],
@@ -72,27 +74,20 @@ with st.container():
             selected_checks.append(point)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    remarks = st.text_area("📝 Remarks / Issues Found (e.g. VFD overcurrent fault)")
+    remarks = st.text_area("📝 Remarks / Issues Found")
 
-    # --- AI ASSISTANT ---
-    if remarks:
+    # AI Button
+    if remarks and api_key:
         if st.button("🤖 Ask AI for Fix?"):
-            if "GEMINI_API_KEY" in st.secrets:
-                with st.spinner('Gemini AI solution dhoond raha hai...'):
-                    try:
-                        # Naye format mein prompt bhejna
-                        prompt = f"Main Naveena Steel mein maintenance engineer hoon. {asset_choice} mein ye masla hai: '{remarks}'. Isay theek karne ke liye 3 zaroori technical points Roman Urdu mein batao."
-                        response = client.models.generate_content(
-                            model="gemini-1.5-flash",
-                            contents=prompt
-                        )
-                        st.markdown(f'<div class="ai-response"><b>AI Suggestion:</b><br>{response.text}</div>', unsafe_allow_html=True)
-                    except Exception as e:
-                        st.error(f"AI Response Error: {e}")
-            else:
-                st.error("API Key missing in Secrets!")
+            with st.spinner('Gemini AI solution dhoond raha hai...'):
+                try:
+                    prompt = f"Technical issue in {asset_choice}: {remarks}. Give 3 quick fix points in Roman Urdu."
+                    response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+                    st.markdown(f'<div class="ai-response"><b>AI Suggestion:</b><br>{response.text}</div>', unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"AI Error: {e}")
 
-    # Submit Button
+    # Submit to Excel
     if st.button("🚀 SUBMIT TO EXCEL"):
         if inspector:
             payload = {"inspector": inspector, "shift": shift, "asset": asset_choice, "checks": ", ".join(selected_checks), "remarks": remarks}
@@ -101,6 +96,4 @@ with st.container():
                 st.success("✅ Data saved in Excel!")
                 st.balloons()
             except:
-                st.error("Google Sheets connection error!")
-        else:
-            st.warning("Inspector name likhen.")
+                st.error("Connection error!")
