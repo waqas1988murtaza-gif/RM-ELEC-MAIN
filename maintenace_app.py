@@ -1,65 +1,67 @@
 import streamlit as st
 import requests
-import json
 
 # --- CONFIG ---
-# Apna Google Script URL yahan lazmi dalein
-SCRIPT_URL = "https://script.google.com/macros/s/XXXXX/exec" 
+# Apna Naya Google Script URL yahan paste karein
+SCRIPT_URL = "APNA_NEW_DEPLOYMENT_URL_YAHAN_DAALEIN"
+ADMIN_PASSWORD = "NAVEENA_ADMIN" 
 
-st.set_page_config(page_title="Naveena Maintenance", page_icon="⚙️")
-
-# Logo Load karein (Aapki repo se)
 st.image("https://raw.githubusercontent.com/waqas1988murtaza/Naveena-Steel/main/download.png", width=150)
-st.title("RM E&I Maintenance Log")
+st.title("RM E&I Maintenance & Dynamic Log")
 
-# 1. Google Sheet se Dynamic List mangwana
+# 1. Google Sheet se Dynamic Data Load karna
 @st.cache_data(ttl=10)
-def get_dynamic_assets():
+def get_assets():
     try:
-        # Hum Google Script ko 'getSettings' action bhejenge
-        resp = requests.get(f"{SCRIPT_URL}?action=getSettings")
+        resp = requests.get(f"{SCRIPT_URL}?action=getSettings", timeout=10)
         return resp.json()
     except:
-        # Agar error aaye to ye default list dikhaye ga
-        return {"1. HMD": ["Model-500", "Model-600"], "2. Loop Scanner": ["Standard"]}
+        # Default data agar connection fail ho jaye
+        return {"HMD": ["HMD-1", "HMD-2"], "Loop Scanner": ["LS-1"]}
 
-assets = get_dynamic_assets()
+asset_dict = get_assets()
 
-# --- ADMIN: FRONT-END SE UPGRADE KAREIN ---
-with st.expander("🛠️ Admin: Add New Equipment/Models"):
-    st.write("Yahan se aap nayi categories ya HMD ke naye models add kar sakte hain.")
+# --- ADMIN SECTION (Password Protected) ---
+with st.expander("⚙️ Admin: Manage Categories & Sub-Items"):
+    pwd = st.text_input("Enter Admin Password", type="password")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        new_cat = st.text_input("New Category Name")
-        if st.button("Add Category"):
-            requests.post(SCRIPT_URL, json={"type": "ADD_SETTING", "category": new_cat, "item": "Default"})
-            st.cache_data.clear()
-            st.rerun()
-            
-    with col2:
-        target_cat = st.selectbox("Select Parent", list(assets.keys()))
-        new_model = st.text_input(f"New Model for {target_cat}")
-        if st.button("Add Model/Item"):
-            requests.post(SCRIPT_URL, json={"type": "ADD_SETTING", "category": target_cat, "item": new_model})
-            st.cache_data.clear()
-            st.rerun()
+    if pwd == ADMIN_PASSWORD:
+        st.success("Admin Access Granted!")
+        tab1, tab2 = st.tabs(["Add New Category", "Add Sub-Items"])
+        
+        with tab1:
+            new_cat = st.text_input("New Main Category (e.g., Motors)")
+            if st.button("Create Category"):
+                requests.post(SCRIPT_URL, json={"type": "ADD_SETTING", "category": new_cat, "item": "Default"})
+                st.cache_data.clear()
+                st.rerun()
+        
+        with tab2:
+            target_cat = st.selectbox("Select Parent Category", list(asset_dict.keys()))
+            st.write(f"Add items for {target_cat} (e.g., {target_cat}-1, {target_cat}-2...)")
+            new_item = st.text_input(f"New Sub-Item Name")
+            if st.button(f"Add to {target_cat}"):
+                requests.post(SCRIPT_URL, json={"type": "ADD_SETTING", "category": target_cat, "item": new_item})
+                st.cache_data.clear()
+                st.rerun()
+    elif pwd != "":
+        st.error("Incorrect Password!")
 
 st.divider()
 
 # --- MAIN LOGGING FORM ---
-name = st.text_input("Inspector Name", placeholder="Enter your name")
+name = st.text_input("Inspector Name")
 shift = st.radio("Shift", ["Shift A", "Shift B"], horizontal=True)
 
-# Parent Selection (HMD, Loop Scanner etc.)
-parent_selection = st.selectbox("Select Equipment Group", list(assets.keys()))
+# 1. Main Category Select karein (e.g., HMD)
+parent_selection = st.selectbox("Select Equipment Group (Parent)", list(asset_dict.keys()))
 
-# Child Selection (HMD ke andar models - AUTOMATIC UPDATE)
-child_options = assets.get(parent_selection, [])
-child_selection = st.selectbox(f"Select Specific {parent_selection}", child_options)
+# 2. Sub-Category Select karein (e.g., HMD-1, HMD-2...)
+# Ye list 'parent_selection' ke mutabiq khud update hogi
+child_options = asset_dict.get(parent_selection, [])
+child_selection = st.selectbox(f"Select Specific {parent_selection} Unit", child_options if child_options else ["No items found"])
 
-# Checklist (Dynamic Checklist bhi bana saktay hain)
-st.info("📝 Maintenance Checklist:")
+st.info(f"📝 Checklist for {child_selection}:")
 c1 = st.checkbox("Clean lens/glass")
 c2 = st.checkbox("Check alignment")
 c3 = st.checkbox("Verify power LED status")
@@ -77,10 +79,10 @@ if st.button("🚀 SUBMIT TO EXCEL"):
     }
     
     try:
-        response = requests.post(SCRIPT_URL, json=payload)
+        response = requests.post(SCRIPT_URL, json=payload, timeout=10)
         if "Success" in response.text:
-            st.success(f"✅ Data for {child_selection} saved successfully!")
+            st.success(f"✅ {child_selection} ka data save ho gaya!")
         else:
-            st.error("❌ Connection error! Google Script check karein.")
+            st.error("❌ Google Script Error!")
     except Exception as e:
-        st.error(f"⚠️ Error: {e}")
+        st.error("⚠️ Connection Error! Script URL ya Internet check karein.")
