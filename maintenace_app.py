@@ -3,7 +3,7 @@ import requests
 
 # --- CONFIG ---
 # Apna Naya Google Script URL yahan paste karein
-SCRIPT_URL = "APNA_NEW_DEPLOYMENT_URL_YAHAN_DAALEIN"
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2D45b2IqEz5EXIwfXXAt1slHvdkvDjbxX4Otdt26gKzvfb_8zqEIHdV2O9W9eWFWUnA/exec"
 ADMIN_PASSWORD = "NAVEENA_ADMIN" 
 
 st.image("https://raw.githubusercontent.com/waqas1988murtaza/Naveena-Steel/main/download.png", width=150)
